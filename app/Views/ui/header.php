@@ -17,12 +17,14 @@
   <meta name="author" content="codedthemes" />
 
   <!-- [Favicon] icon -->
-  <link rel="icon" href="<?php echo base_url('assets/images/favicon.svg') ?>" type="image/x-icon" />
+  <link rel="icon" href="<?php echo base_url('assets/images/jibas2015.ico') ?>" type="image/x-icon" />
 
   <!-- map-vector css -->
   <link rel="stylesheet" href="<?php echo base_url('assets/css/plugins/jsvectormap.min.css') ?>" />
   <!-- [Google Font : Poppins] icon -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
   <!-- [Tabler Icons] https://tablericons.com -->
   <link rel="stylesheet" href="<?php echo base_url('assets/fonts/tabler-icons.min.css') ?>" />
@@ -35,7 +37,7 @@
   <!-- [Template CSS Files] -->
   <link rel="stylesheet" href="<?php echo base_url('assets/css/style.css') ?>" id="main-style-link" />
   <link rel="stylesheet" href="<?php echo base_url('assets/css/style-preset.css') ?>" />
-
+  <link rel="stylesheet" href="<?php echo base_url('assets/css/style-preset-custom.css') ?>" />
 </head>
 <!-- [Head] end -->
 <!-- [Body] Start -->
@@ -48,10 +50,10 @@
     </div>
   </div>
   <!-- [ Pre-loader ] End -->
-  
+
   <!-- [ Header Topbar ] start -->
-   <!-- javascript:void(0) -->
-  <header class="pc-header">
+  <!-- javascript:void(0) -->
+  <header class="pc-header" style="background: green;">
     <div class="m-header">
       <a href="<?php echo site_url('ref') ?>" class="b-brand text-primary align-items-center" style="padding-top: 10px;">
         <!-- ========   Change your logo from here   ============ -->
