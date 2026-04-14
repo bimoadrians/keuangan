@@ -2,12 +2,12 @@
 <?php if ($sidebar == 'referensi') {
   $ref = '<li class="pc-item pc-hasmenu active">';
   $kod_rek = '<li class="pc-item">';
-  $sett = '<li class="pc-item pc-hasmenu">';
+  $setting = '<li class="pc-item pc-hasmenu">';
 ?>
 <?php } else if ($sidebar == 'kod_rek') {
   $ref = '<li class="pc-item pc-hasmenu pc-trigger">';
   $kod_rek = '<li class="pc-item active">';
-  $sett = '<li class="pc-item pc-hasmenu">';
+  $setting = '<li class="pc-item pc-hasmenu">';
 ?>
 <?php } ?>
 <!-- javascript:void(0) -->
@@ -63,7 +63,7 @@
           </li>
         </ul>
         </li>
-        <?php echo $sett; ?>
+        <?php echo $setting; ?>
         <a href="#!" class="pc-link"><span class="pc-micon"> <i class="ph ph-gear"></i> </span><span class="pc-mtext">Pengaturan</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
         <ul class="pc-submenu">
           <li class="pc-item">

@@ -11,13 +11,37 @@
       text-align: center !important;
     }
 
-    /* 2. Aturan Khusus Saat Kertas Dicetak */
+    table.dataTable,
+    table.dataTable th,
+    table.dataTable td {
+      box-sizing: border-box;
+    }
+
+    #tab_kod_rek {
+      border-top: 1px solid black !important;
+      border-collapse: separate !important;
+      border-spacing: 0;
+      width: 100% !important;
+    }
+
+    /* 2. Aturan Khusus Saat Kertas Dicetak / Diprint */
     @media print {
 
       @page {
         margin-top: 1cm;
         /* Memotong jarak kosong bawaan browser di bagian atas */
         margin-bottom: 1cm;
+      }
+
+      #tab_kod_rek tbody tr {
+        display: table-row !important;
+      }
+
+      .dataTables_length,
+      .dataTables_filter,
+      .dataTables_info,
+      .dataTables_paginate {
+        display: none !important;
       }
 
       .bor_tab {
@@ -29,6 +53,10 @@
         width: 100% !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
+      }
+
+      thead tr:first-child th {
+        border-top: 1px solid black !important;
       }
 
       /* Sembunyikan seluruh isi web */
@@ -93,14 +121,14 @@
             <div class="card-header">
               <h4 class="mb-2">Kode Rekening Perkiraan</h4>
               <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="<?php echo site_url('ref') ?>">Referensi</i></a></li>
+                <li class="breadcrumb-item"><a href="<?php echo site_url('ref') ?>">Referensi</a></li>
                 <li class="breadcrumb-item" aria-current="page">Kode Rekening Perkiraan</li>
               </ul>
               <div class="px-0 py-3">
                 <div class="row align-items-center justify-content-between g-3">
                   <div class="col-auto d-flex align-items-center">
                     <label for="kategoriFilter" class="col-form-label fw-bold me-3 text-nowrap">Kategori:</label>
-                    <select id="kategoriFilter" class="form-select" style="min-width: 200px;" onchange="filterTabel()">
+                    <select id="kategoriFilter" class="form-select" style="min-width: 200px;">
                       <option value="harta">Harta</option>
                       <option value="piutang">Piutang</option>
                       <option value="persediaan">Persediaan</option>
@@ -153,7 +181,7 @@
                   </h6>
                 </div>
                 <div class="px-4 bor_tab">
-                  <table class="table table-bordered border-2 border-dark align-middle" id="tab_kod_rek">
+                  <table class="table table-bordered border-2 border-dark align-middle" id="tab_kod_rek" style="width: 100%;">
                     <thead>
                       <tr>
                         <th class="text-center">No</th>
@@ -170,7 +198,7 @@
                         <td class="text-center">11020889</td>
                         <td>ASET</td>
                         <td>UNTUK rekening kantin dan toko sekolah</td>
-                        <td class="d-none">-</td>
+                        <td class="d-none">harta</td>
                         <td class="text-center text-nowrap d-print-none">
                           <button class="btn btn-warning text-black me-1" data-bs-toggle="modal" data-bs-target="#edit_tab"><i class="ph ph-pencil me-2"></i> Ubah</button>
                           <button class="btn btn-danger" onclick="del_tab(this)"><i class="ph ph-trash me-2"></i> Hapus</button>
@@ -285,22 +313,36 @@
                 </div>
                 <script>
                   function cetakLaporan() {
-                    // 1. Simpan nama tab/program yang asli ("SMARTERP")
+                    // 1. Simpan nama tab asli
                     let judulAsli = document.title;
-
-                    // 2. Munculkan pop-up untuk mengganti teks header bawaan browser
                     let judulCetak = "JIBAS KEU [Cetak Kode Rekening Perkiraan]";
 
-                    // 3. Jika pengguna mengisi teks, ubah title web sementara
+                    // 2. Akses object DataTable kamu
+                    // Ganti '#tab_kod_rek' sesuai ID tabelmu
+                    var table = $('#tab_kod_rek').DataTable();
+
+                    // 3. Simpan settingan paginasi asli (supaya nanti bisa balik ke 10 data)
+                    var settinganLama = table.page.len();
+
+                    // 4. UBAH TAMPILAN MENJADI SEMUA DATA (-1 berarti All)
+                    table.page.len(-1).draw();
+
+                    // 5. Ubah title untuk header browser
                     if (judulCetak !== null && judulCetak.trim() !== "") {
                       document.title = judulCetak;
                     }
 
-                    // 4. Lakukan proses cetak
-                    window.print();
+                    // 6. Jalankan proses cetak
+                    // Gunakan setTimeout sedikit agar browser punya waktu untuk me-render semua baris baru
+                    setTimeout(function() {
+                      window.print();
 
-                    // 5. Kembalikan nama tab web menjadi "SMARTERP" seperti semula
-                    document.title = judulAsli;
+                      // 7. KEMBALIKAN KE SETTINGAN AWAL (misal balik ke 10 data lagi)
+                      table.page.len(settinganLama).draw();
+
+                      // 8. Kembalikan nama tab asli
+                      document.title = judulAsli;
+                    }, 500);
                   }
 
                   // Fungsi untuk menyiapkan isi modal sebelum ditampilkan
@@ -324,52 +366,23 @@
                     let yakin = confirm("Apakah anda yakin akan menghapus data ini?");
 
                     if (yakin) {
-                      let tabel = document.getElementById("tab_kod_rek");
-                      let tbody = tabel.querySelector("tbody") || tabel;
+                      // Panggil API DataTables
+                      let table = $('#tab_kod_rek').DataTable();
 
-                      // 1. Hapus baris yang dipilih pengguna
-                      let barisTabel = tombol.closest("tr");
-                      barisTabel.remove();
-
-                      // 2. Hitung sisa baris data yang ada di tabel
-                      // Mengabaikan baris judul (th) dan baris kosong itu sendiri
-                      let sisaBaris = tbody.querySelectorAll("tr:not(#baris-kosong)");
-                      let jumlahData = 0;
-
-                      sisaBaris.forEach(row => {
-                        // Hanya hitung baris yang memiliki <td> dan tidak sedang disembunyikan oleh filter
-                        if (row.getElementsByTagName("td").length > 0 && row.style.display !== "none") {
-                          jumlahData++;
-                        }
-                      });
-
-                      // 3. Jika sisa data 0, tampilkan baris "Tidak ada data untuk kategori ini."
-                      if (jumlahData === 0) {
-                        let barisKosong = document.getElementById("baris-kosong");
-
-                        // Jika baris kosong belum ada, buat elemen baru
-                        if (!barisKosong) {
-                          barisKosong = document.createElement("tr");
-                          barisKosong.id = "baris-kosong";
-                          barisKosong.className = "d-print-none";
-                          barisKosong.innerHTML = `<td colspan="6" class="text-center text-muted fw-bold py-4">Tidak ada data untuk kategori ini.</td>`;
-                          tbody.appendChild(barisKosong);
-                        } else {
-                          // Jika sudah ada sebelumnya, pastikan teksnya sesuai dan tampilkan
-                          barisKosong.innerHTML = `<td colspan="6" class="text-center text-muted fw-bold py-4">Tidak ada data untuk kategori ini.</td>`;
-                          barisKosong.style.display = "";
-                        }
-                      }
+                      // Hapus baris tempat tombol berada, lalu render ulang (draw)
+                      table.row($(tombol).closest('tr')).remove().draw();
 
                       alert("Data berhasil dihapus!");
+
+                      // Catatan: Kamu tidak perlu lagi repot membuat "baris-kosong". 
+                      // DataTables akan otomatis memunculkan teks "Tidak ada data..." 
+                      // dari konfigurasi 'zeroRecords' jika datanya habis!
                     }
                   }
 
                   // === TAMBAHAN BARU DI SINI ===
                   // Perintah ini akan otomatis menjalankan filterTabel() saat halaman selesai dimuat
                   document.addEventListener("DOMContentLoaded", function() {
-                    filterTabel();
-
                     let modalEdit = document.getElementById('edit_tab');
 
                     if (modalEdit) {
@@ -397,6 +410,80 @@
                         document.getElementById("editKeterangan").value = dataKeterangan;
                       });
                     }
+
+                    // 1. Inisialisasi DataTable
+                    var table = $('#tab_kod_rek').DataTable({
+                      "pageLength": 10,
+                      "language": {
+                        "zeroRecords": "Tidak ada data untuk kategori ini.",
+                        "infoEmpty": "Tidak ada data tersedia",
+                        "info": "Menampilkan _START_ sampai _END_ data dari total _TOTAL_ data",
+                        "infoFiltered": "",
+                        "search": "Cari:",
+                        "paginate": {
+                          "first": "Pertama",
+                          "last": "Terakhir",
+                          "next": "Selanjutnya",
+                          "previous": "Sebelumnya",
+                        }
+                      },
+                      "lengthMenu": [
+                        [10, 25, 50, -1], // Nilai asli (Logic)
+                        [10, 25, 50, "All"] // Teks yang muncul di dropdown (Display)
+                      ],
+                      "columnDefs": [{
+                        "targets": [0, 5], // Menargetkan kolom pertama (No)
+                        "orderable": false // Mematikan fitur klik/sort pada kolom tersebut
+                      }],
+                      "order": [],
+                      "initComplete": function(settings, json) {
+                        // DataTables otomatis memberi class 'dataTables_filter' pada div search
+                        // Kita cari tag input di dalamnya, lalu tambahkan atribut ID
+                        $('.dataTables_filter input').attr('id', 'search_kod_rek');
+                      },
+                    });
+
+                    $(window).on('resize', function() {
+                      // Jeda untuk menunggu animasi template selesai
+                      setTimeout(function() {
+                        // Pastikan tabel benar-benar adalah DataTables sebelum di-adjust
+                        if ($.fn.DataTable.isDataTable('#tab_kod_rek')) {
+                          $('#tab_kod_rek').DataTable().columns.adjust().draw();
+                        }
+                      }, 300); // Saya naikkan jedanya jadi 300ms agar lebih aman
+                    });
+
+                    // --- FUNGSI UNTUK MENJALANKAN FILTER ---
+                    function jalankanFilter() {
+                      let selectDropdown = $('#kategoriFilter');
+                      let filterValue = selectDropdown.val();
+                      let teksPilihan = selectDropdown.find('option:selected').text();
+
+                      // Update judul untuk print
+                      let elemenJudul = document.getElementById("teks-kategori-print");
+                      if (elemenJudul) elemenJudul.innerText = teksPilihan;
+
+                      // Lakukan filter pada kolom ke-5 (indeks 4)
+                      table.column(4).search(filterValue).draw();
+                    }
+
+                    // 2. Filter Awal saat Load (Agar tidak muncul semua data di awal)
+                    jalankanFilter();
+
+                    // 3. Logika Filter saat Dropdown diubah oleh pengguna
+                    $('#kategoriFilter').on('change', function() {
+                      jalankanFilter();
+                    });
+
+                    // 4. Menangani Penomoran Ulang Otomatis
+                    table.on('order.dt search.dt', function() {
+                      table.column(0, {
+                        search: 'applied',
+                        order: 'applied'
+                      }).nodes().each(function(cell, i) {
+                        cell.innerHTML = i + 1;
+                      });
+                    }).draw();
                   });
                 </script>
               </div>
